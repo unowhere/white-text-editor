@@ -34,12 +34,13 @@ jobs:
         run: |
           pyinstaller --onefile --windowed --icon=note.icns \
           --add-data "NotoSansTC.ttf:." --add-data "note.ico:." \
+          --name "純白文本編輯器" \
           '純白文本編輯器三框版.py'
 
       - name: 建立 DMG 檔案
         run: |
           mkdir -p dist/純白文本編輯器
-          mv dist/'純白文本編輯器' dist/純白文本編輯器/
+          mv dist/純白文本編輯器.app dist/純白文本編輯器/
           hdiutil create -volname 純白文本編輯器 -srcfolder dist/純白文本編輯器 -ov -format UDZO 純白文本編輯器.dmg
 
       - name: 上傳打包結果
