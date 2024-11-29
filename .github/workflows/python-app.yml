@@ -1,0 +1,53 @@
+name: Build macOS Application
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+      - name: 檢出程式碼
+        uses: actions/checkout@v4
+
+      - name: 設定 Python 環境
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.8'
+
+      - name: 安裝依賴項
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyinstaller
+
+      - name: 轉換圖示格式
+        run: |
+          # 將 ICO 檔案轉換為 ICNS 格式
+          mkdir -p icons.iconset
+          sips -s format png note.ico --out icons.iconset/icon_128x128.png
+          iconutil -c icns icons.iconset -o note.icns
+
+      - name: 打包應用程式
+        run: |
+          pyinstaller --onefile --windowed --icon=note.icns \
+          --add-data "NotoSansTC.ttf:." --add-data "note.ico:." \
+          --name "純白文本編輯器" \
+          '純白文本編輯器三框版.py'
+
+      - name: 建立 DMG 檔案
+        run: |
+          if [ -d "dist/純白文本編輯器" ]; then
+            rm -rf dist/純白文本編輯器
+          fi
+          mkdir -p dist/純白文本編輯器
+          mv dist/純白文本編輯器.app dist/純白文本編輯器/
+          hdiutil create -volname 純白文本編輯器 -srcfolder dist/純白文本編輯器 -ov -format UDZO 純白文本編輯器.dmg
+
+      - name: 上傳打包結果
+        uses: actions/upload-artifact@v4
+        with:
+          name: 純白文本編輯器.dmg
+          path: 純白文本編輯器.dmg
